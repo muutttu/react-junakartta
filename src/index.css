@@ -47,6 +47,39 @@ body {
   text-align: left;
 }
 
+.station-info {
+  position: absolute;
+  top: 20%;
+  left: 2%;
+  width: 400px;
+  min-height: 100px;
+  padding: 10px;
+  background-color: black;
+  opacity: 0.6;
+  border-radius: 10px;
+  font-size: 18px;
+  color: #fff;
+  z-index: 99999;
+}
+
+.station-info button {
+  position: absolute;
+  background-color: white;
+  opacity: 1;
+  top: 5px;
+  right: 5px;
+  margin: 0px;
+}
+
+.station-info ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.station-info li {
+  padding: 5px 0;
+}
+
 .footer {
   padding: 3px;
   background-color: rgb(184, 43, 43);

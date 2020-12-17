@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MapContainer, LayersControl, TileLayer, FeatureGroup } from 'react-leaflet';
-import StationMarker from './StationMarker'
-//import StationInfoBox from './StationInfoBox'
-import Loader from './Loader'
+import { MapContainer, LayersControl, TileLayer, GeoJSON } from 'react-leaflet';
+//import StationMarker from './StationMarker';
+import StationInfoBox from './StationInfoBox';
+import Loader from './Loader';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+
+import passengerstation from '../images/passenger-railway-station-24.png'
+import otherstation from '../images/other-railway-station-24.png'
 
 
 const Map = ({ center, zoom }) => {
     const [stations, setStations] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isError, setIsError] = useState(false);
+    const [stationInfo, setStationInfo] = useState(null);
+    const [showInfoBox, setShowInfoBox] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -21,7 +27,7 @@ const Map = ({ center, zoom }) => {
 
             try {
                 const result = await axios('https://rata.digitraffic.fi/api/v1/metadata/stations.geojson');
-                setStations(result.data.features);
+                setStations(result.data);
                 setIsLoading(false);
             } catch (error) {
                 // Handle Error Here
@@ -40,27 +46,44 @@ const Map = ({ center, zoom }) => {
         }
     }, []);
 
-    const stationMarkers = stations.map((station, index) => {
-        return <StationMarker
-            key={index}
-            position={[station.geometry.coordinates[1], station.geometry.coordinates[0]]}
-            name={station.properties.stationName}
-            code={station.properties.stationShortCode}
-            id={station.properties.stationUICCode}
-            ispassenger={station.properties.passengerTraffic}
-        />
-    })
+    let PassengerStationIcon = L.icon({
+        iconUrl: passengerstation,
+        iconAnchor: [12, 12],
+    });
+
+    let OtherStationIcon = L.icon({
+        iconUrl: otherstation,
+        iconAnchor: [12, 12],
+    });
+
+    const handlePointToLayer = (feature, latlng) => {
+        //return newL.circleMarker(latlng, null);
+        if(feature.properties.passengerTraffic) {
+            return L.marker(latlng, {icon: PassengerStationIcon,});
+        }
+        return L.marker(latlng, {icon: OtherStationIcon,});
+        //return <StationMarker key={feature.properties.stationUICCode} position={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]} />;
+        //return <StationMarker />;
+    };
 
     const handleOnEachFeature = (feature, layer) => {
-        console.log('feature: ', feature);
-        console.log('layer: ', layer);
+        //console.log(feature.properties.stationName);
         layer.on({
             'click': function (e) {
-                console.log('e: ', e);
-                console.log('click');
+                //console.log('click! e: ', e.target.feature.properties);
+                setStationInfo({
+                    id: e.target.feature.properties.stationUICCode,
+                    name: e.target.feature.properties.stationName,
+                    ispassenger: e.target.feature.properties.passengerTraffic ? "Kyllä" : "Ei"
+                });
+                setShowInfoBox(true);
             }
-        })
-    }
+        });
+    };
+
+    const handleInfoBoxShow = () => {
+        setShowInfoBox(false);
+    };
 
     return (
         <div className="map">
@@ -81,12 +104,11 @@ const Map = ({ center, zoom }) => {
                         />
                     </LayersControl.BaseLayer>
                     <LayersControl.Overlay checked name="Asemat">
-                        <FeatureGroup onEachFeature={handleOnEachFeature}>
-                            {isLoading ? <Loader /> : stationMarkers}
-                        </FeatureGroup>
+                        {isLoading ? <Loader /> : <GeoJSON data={stations} pointToLayer={handlePointToLayer} onEachFeature={handleOnEachFeature} />}
                     </LayersControl.Overlay>
                 </LayersControl>
             </MapContainer>
+            {showInfoBox && stationInfo && <StationInfoBox show={handleInfoBoxShow} info={stationInfo} />}
         </div>
     )
 }
