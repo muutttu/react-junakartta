@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MapContainer, LayersControl, TileLayer, GeoJSON } from 'react-leaflet';
-//import StationMarker from './StationMarker';
-import StationInfoBox from './StationInfoBox';
 import Loader from './Loader';
+import StationInfoBox from './StationInfoBox';
+import { MapContainer, LayersControl, TileLayer, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
-import passengerstation from '../images/passenger-railway-station-24.png'
-import otherstation from '../images/other-railway-station-24.png'
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+import passengerstation from '../images/passenger-railway-station.png'
+import otherstation from '../images/other-railway-station.png'
 
 
 const Map = ({ center, zoom }) => {
@@ -46,31 +45,34 @@ const Map = ({ center, zoom }) => {
         }
     }, []);
 
-    let PassengerStationIcon = L.icon({
-        iconUrl: passengerstation,
-        iconAnchor: [12, 12],
+    let StationIcon = L.Icon.extend({
+        options: {
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            shadowUrl: iconShadow,
+            shadowSize: [40, 40],
+            shadowAnchor: [10, 40]
+        }
     });
 
-    let OtherStationIcon = L.icon({
-        iconUrl: otherstation,
-        iconAnchor: [12, 12],
+    let PassengerStationIcon = new StationIcon({
+        iconUrl: passengerstation
+    });
+
+    let OtherStationIcon = new StationIcon({
+        iconUrl: otherstation
     });
 
     const handlePointToLayer = (feature, latlng) => {
-        //return newL.circleMarker(latlng, null);
         if(feature.properties.passengerTraffic) {
             return L.marker(latlng, {icon: PassengerStationIcon,});
         }
         return L.marker(latlng, {icon: OtherStationIcon,});
-        //return <StationMarker key={feature.properties.stationUICCode} position={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]} />;
-        //return <StationMarker />;
     };
 
     const handleOnEachFeature = (feature, layer) => {
-        //console.log(feature.properties.stationName);
         layer.on({
             'click': function (e) {
-                //console.log('click! e: ', e.target.feature.properties);
                 setStationInfo({
                     id: e.target.feature.properties.stationUICCode,
                     name: e.target.feature.properties.stationName,

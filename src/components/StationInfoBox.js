@@ -2,7 +2,7 @@ const StationInfoBox = ({ show, info }) => {
 
     return (
         <div className="station-info">
-            <button onClick={show}><strong>X</strong></button>
+            <button onClick={show}><i class="las la-times"></i></button>
             <h2>Asematiedot:</h2>
             <ul>
                 <li>Asematunnus: <strong>{info.id}</strong></li>
