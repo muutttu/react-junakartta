@@ -137,7 +137,11 @@ const Map = ({ center, zoom }) => {
     };
 
     const handleTrainFeatures = (feature, layer) => {
-        //console.log(layer);
+        layer.on({
+            'click': function (e) {
+                console.log(e.target.feature.properties.trainNumber);
+            }
+        });
     };
 
     const handleInfoBoxShow = () => {
@@ -188,7 +192,7 @@ Map.defaultProps = {
         lat: 61.5,
         lng: 23.8
     },
-    zoom: 12
+    zoom: 10
 }
 
 export default Map
