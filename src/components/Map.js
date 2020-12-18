@@ -1,21 +1,28 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Loader from './Loader';
+import Updater from './Updater';
 import StationInfoBox from './StationInfoBox';
-import { MapContainer, LayersControl, TileLayer, GeoJSON } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, FeatureGroup, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+//import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import passengerstation from '../images/passenger-railway-station.png'
-import otherstation from '../images/other-railway-station.png'
+import otherstation from '../images/other-railway-station.png';
+import train from '../images/steam-engine.png';
 
 
 const Map = ({ center, zoom }) => {
     const [stations, setStations] = useState([]);
+    const [stationsLoaded, setStationsLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [isError, setIsError] = useState(false);
     const [stationInfo, setStationInfo] = useState(null);
     const [showInfoBox, setShowInfoBox] = useState(false);
+    const [trains, setTrains] = useState([]);
+    const [refreshTrigger, setRefreshTrigger] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -25,8 +32,8 @@ const Map = ({ center, zoom }) => {
             setIsError(false);
 
             try {
-                const result = await axios('https://rata.digitraffic.fi/api/v1/metadata/stations.geojson');
-                setStations(result.data);
+                const stationdata = await axios('https://rata.digitraffic.fi/api/v1/metadata/stations.geojson');
+                setStations(stationdata.data);
                 setIsLoading(false);
             } catch (error) {
                 // Handle Error Here
@@ -36,6 +43,7 @@ const Map = ({ center, zoom }) => {
             }
 
             setIsLoading(false);
+            setStationsLoaded(true);
         };
 
         fetchData();
@@ -44,6 +52,36 @@ const Map = ({ center, zoom }) => {
             //console.log("This will be logged on component unmount");
         }
     }, []);
+
+    useEffect(() => {
+        const updateTrainData = async () => {
+            setIsUpdating(true);
+
+            try {
+                const traindata = await axios('https://rata.digitraffic.fi/api/v1/train-locations.geojson/latest');
+                setTrains(traindata.data);
+                setIsUpdating(false);
+            } catch (error) {
+                // Handle Error Here
+                console.error(error);
+                alert("Virhe datan noutamisessa :( \n \n" + error)
+                setIsError(true);
+            }
+
+            setIsUpdating(false);
+        }
+
+        updateTrainData();
+
+        const interval = setInterval(() => {            
+            setRefreshTrigger(!refreshTrigger);
+        }, 15000);
+
+        return () => {
+            //console.log("Behavior right before the component is removed from the DOM.");
+            clearInterval(interval);
+        }
+    }, [refreshTrigger]);
 
     let StationIcon = L.Icon.extend({
         options: {
@@ -63,14 +101,24 @@ const Map = ({ center, zoom }) => {
         iconUrl: otherstation
     });
 
-    const handlePointToLayer = (feature, latlng) => {
-        if(feature.properties.passengerTraffic) {
-            return L.marker(latlng, {icon: PassengerStationIcon,});
+    let TrainIcon = L.Icon.extend({
+        options: {
+            iconSize: [40, 40]
         }
-        return L.marker(latlng, {icon: OtherStationIcon,});
+    })
+
+    let DefaultTrainIcon = new TrainIcon({
+        iconUrl: train
+    });
+
+    const handleStationLayer = (feature, latlng) => {
+        if (feature.properties.passengerTraffic) {
+            return L.marker(latlng, { icon: PassengerStationIcon, });
+        }
+        return L.marker(latlng, { icon: OtherStationIcon, });
     };
 
-    const handleOnEachFeature = (feature, layer) => {
+    const handleStationFeatures = (feature, layer) => {
         layer.on({
             'click': function (e) {
                 setStationInfo({
@@ -81,6 +129,14 @@ const Map = ({ center, zoom }) => {
                 setShowInfoBox(true);
             }
         });
+    };
+
+    const handleTrainLayer = (feature, latlng) => {
+        return L.marker(latlng, { icon: DefaultTrainIcon, });
+    };
+
+    const handleTrainFeatures = (feature, layer) => {
+        //console.log(layer);
     };
 
     const handleInfoBoxShow = () => {
@@ -106,7 +162,18 @@ const Map = ({ center, zoom }) => {
                         />
                     </LayersControl.BaseLayer>
                     <LayersControl.Overlay checked name="Asemat">
-                        {isLoading ? <Loader /> : <GeoJSON data={stations} pointToLayer={handlePointToLayer} onEachFeature={handleOnEachFeature} />}
+                        <FeatureGroup>
+                            {isLoading
+                                ? <Loader />
+                                : <GeoJSON data={stations} pointToLayer={handleStationLayer} onEachFeature={handleStationFeatures} />}
+                        </FeatureGroup>
+                    </LayersControl.Overlay>
+                    <LayersControl.Overlay checked name="Junat">
+                        <FeatureGroup>
+                            {stationsLoaded && isUpdating
+                                ? <Updater />
+                                : <GeoJSON data={trains} pointToLayer={handleTrainLayer} onEachFeature={handleTrainFeatures} />}
+                        </FeatureGroup>
                     </LayersControl.Overlay>
                 </LayersControl>
             </MapContainer>
@@ -117,10 +184,10 @@ const Map = ({ center, zoom }) => {
 
 Map.defaultProps = {
     center: {
-        lat: 64.5,
-        lng: 24
+        lat: 61.5,
+        lng: 23.8
     },
-    zoom: 6
+    zoom: 12
 }
 
 export default Map

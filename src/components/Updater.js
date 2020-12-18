@@ -1,14 +1,14 @@
 import LoadingOverlay from 'react-loading-overlay';
 
-const Loader = () => {
+const Updater = () => {
     return (
         <LoadingOverlay
             active
             spinner
-            text='Ladataan asematietoja...'
+            text='Päivitetään junatietoja...'
         >
         </LoadingOverlay>
     )
 }
 
-export default Loader
+export default Updater
