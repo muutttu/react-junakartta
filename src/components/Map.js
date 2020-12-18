@@ -103,7 +103,8 @@ const Map = ({ center, zoom }) => {
 
     let TrainIcon = L.Icon.extend({
         options: {
-            iconSize: [40, 40]
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
         }
     })
 
