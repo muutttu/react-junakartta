@@ -4,6 +4,7 @@ import Loader from './Loader';
 import Updater from './Updater';
 import StationInfoBox from './StationInfoBox';
 import TrainInfoBox from './TrainInfoBox';
+import TrainLayer from './TrainLayer';
 import { MapContainer, LayersControl, TileLayer, FeatureGroup, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -11,7 +12,6 @@ import 'leaflet/dist/leaflet.css';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import passengerstation from '../images/passenger-railway-station.png'
 import otherstation from '../images/other-railway-station.png';
-import train from '../images/steam-engine.png';
 
 
 const Map = ({ center, zoom }) => {
@@ -76,7 +76,7 @@ const Map = ({ center, zoom }) => {
 
         updateTrainData();
 
-        const interval = setInterval(() => {            
+        const interval = setInterval(() => {
             setRefreshTrigger(!refreshTrigger);
         }, 15000);
 
@@ -104,16 +104,7 @@ const Map = ({ center, zoom }) => {
         iconUrl: otherstation
     });
 
-    let TrainIcon = L.Icon.extend({
-        options: {
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
-        }
-    })
 
-    let DefaultTrainIcon = new TrainIcon({
-        iconUrl: train
-    });
 
     const handleStationLayer = (feature, latlng) => {
         if (feature.properties.passengerTraffic) {
@@ -135,28 +126,10 @@ const Map = ({ center, zoom }) => {
         });
     };
 
-    const handleTrainLayer = (feature, latlng) => {
-        return L.marker(latlng, { icon: DefaultTrainIcon, });
-    };
 
-    const handleTrainFeatures = (feature, layer) => {
-        layer.on({
-            'click': function (e) {
-                console.log(e.target.feature.properties);
-                setTrainInfo({
-                    number: e.target.feature.properties.trainNumber,
-                });
-                setShowTrainInfoBox(true);
-            }
-        });
-    };
 
     const handleInfoBoxShow = () => {
         setShowInfoBox(false);
-    };
-
-    const handleTrainInfoBoxShow = () => {
-        setShowTrainInfoBox(false);
     };
 
     return (
@@ -188,13 +161,12 @@ const Map = ({ center, zoom }) => {
                         <FeatureGroup>
                             {stationsLoaded && isUpdating
                                 ? <Updater />
-                                : <GeoJSON data={trains} pointToLayer={handleTrainLayer} onEachFeature={handleTrainFeatures} />}
+                                : <TrainLayer layerdata={trains} />}
                         </FeatureGroup>
                     </LayersControl.Overlay>
                 </LayersControl>
             </MapContainer>
             {showInfoBox && stationInfo && <StationInfoBox show={handleInfoBoxShow} info={stationInfo} />}
-            {showTrainInfoBox && trainInfo && <TrainInfoBox show={handleTrainInfoBoxShow} info={trainInfo} />}
         </div>
     )
 }
