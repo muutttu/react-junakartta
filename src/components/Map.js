@@ -3,6 +3,7 @@ import axios from 'axios';
 import Loader from './Loader';
 import Updater from './Updater';
 import StationInfoBox from './StationInfoBox';
+import TrainInfoBox from './TrainInfoBox';
 import { MapContainer, LayersControl, TileLayer, FeatureGroup, GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -23,6 +24,8 @@ const Map = ({ center, zoom }) => {
     const [showInfoBox, setShowInfoBox] = useState(false);
     const [trains, setTrains] = useState([]);
     const [refreshTrigger, setRefreshTrigger] = useState(false);
+    const [trainInfo, setTrainInfo] = useState(null);
+    const [showTrainInfoBox, setShowTrainInfoBox] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -139,13 +142,21 @@ const Map = ({ center, zoom }) => {
     const handleTrainFeatures = (feature, layer) => {
         layer.on({
             'click': function (e) {
-                console.log(e.target.feature.properties.trainNumber);
+                console.log(e.target.feature.properties);
+                setTrainInfo({
+                    number: e.target.feature.properties.trainNumber,
+                });
+                setShowTrainInfoBox(true);
             }
         });
     };
 
     const handleInfoBoxShow = () => {
         setShowInfoBox(false);
+    };
+
+    const handleTrainInfoBoxShow = () => {
+        setShowTrainInfoBox(false);
     };
 
     return (
@@ -183,6 +194,7 @@ const Map = ({ center, zoom }) => {
                 </LayersControl>
             </MapContainer>
             {showInfoBox && stationInfo && <StationInfoBox show={handleInfoBoxShow} info={stationInfo} />}
+            {showTrainInfoBox && trainInfo && <TrainInfoBox show={handleTrainInfoBoxShow} info={trainInfo} />}
         </div>
     )
 }
