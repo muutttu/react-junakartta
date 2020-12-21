@@ -2,7 +2,7 @@ import { GeoJSON } from 'react-leaflet';
 import L from 'leaflet';
 import train from '../images/steam-engine.png';
 
-const TrainLayer = ({ layerdata }) => {
+const TrainLayer = ({ layerdata, selectedtrain, infoboxtrigger }) => {
 
     let TrainIcon = L.Icon.extend({
         options: {
@@ -22,20 +22,16 @@ const TrainLayer = ({ layerdata }) => {
     const handleOnEachFeature = (feature, layer) => {
         layer.on({
             'click': function (e) {
-                console.log(e.target.feature.properties.trainNumber);
-                //setTrainInfo(e.target.feature.properties.trainNumber);
-                //setShowTrainInfoBox(true);
+                //console.log(e.target.feature.properties.trainNumber);
+                infoboxtrigger();
+                selectedtrain(e.target.feature.properties.trainNumber);
             }
         });
     };
 
-    const handleTrainInfoBoxShow = () => {
-        //setShowTrainInfoBox(false);
-    };
-
     return (
         <>
-            <GeoJSON data={layerdata} pointToLayer={handlePointToLayer} onEachFeature={handleOnEachFeature} />}
+            <GeoJSON data={layerdata} pointToLayer={handlePointToLayer} onEachFeature={handleOnEachFeature} />
         </>
     )
 }

@@ -126,11 +126,23 @@ const Map = ({ center, zoom }) => {
         });
     };
 
-
-
     const handleInfoBoxShow = () => {
         setShowInfoBox(false);
     };
+
+    const handleTrainInfoBoxShow = () => {
+        setShowTrainInfoBox(false);
+    };
+
+    const triggerShowTrainInfoBox = () => {
+        setShowTrainInfoBox(true);
+    };
+    //console.log(showTrainInfoBox);
+
+    const handleSelectedTrain = (train) => {
+        setTrainInfo(train);
+    };
+    //console.log(trainInfo);
 
     return (
         <div className="map">
@@ -161,12 +173,13 @@ const Map = ({ center, zoom }) => {
                         <FeatureGroup>
                             {stationsLoaded && isUpdating
                                 ? <Updater />
-                                : <TrainLayer layerdata={trains} />}
+                                : <TrainLayer layerdata={trains} selectedtrain={handleSelectedTrain} infoboxtrigger={triggerShowTrainInfoBox} />}
                         </FeatureGroup>
                     </LayersControl.Overlay>
                 </LayersControl>
             </MapContainer>
             {showInfoBox && stationInfo && <StationInfoBox show={handleInfoBoxShow} info={stationInfo} />}
+            {showTrainInfoBox && trainInfo && <TrainInfoBox show={handleTrainInfoBoxShow} train={trainInfo} />}
         </div>
     )
 }

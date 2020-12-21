@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const TrainInfoBox = ({ show, info }) => {
+const TrainInfoBox = ({ show, train }) => {
 
-    const [trainDetails, setTrainDetails] = useState(null);
-
-    //console.log(info);
+    const [selectedTrain, setSelectedTrain] = useState([{
+        trainNumber: train
+    }]);
 
     useEffect(() => {
         const getTrainData = async () => {
             try {
-                const traindetails = await axios('https://rata.digitraffic.fi/api/v1/trains/latest/'+info);
-                setTrainDetails(traindetails.data);
+                const traindetails = await axios('https://rata.digitraffic.fi/api/v1/trains/latest/'+train);
+                setSelectedTrain(traindetails.data);
                 //setIsUpdating(false);
                 //console.log(traindetails.data[0].trainNumber);
             } catch (error) {
@@ -24,16 +24,16 @@ const TrainInfoBox = ({ show, info }) => {
         return () => {
             //console.log("This will be logged on component unmount");
         }
-    }, [info]);
+    }, [train]);
 
-    console.log(trainDetails);
+    console.log(selectedTrain[0]);
 
     return (
         <div className="train-info">
             <button onClick={show}><i class="las la-times"></i></button>
             <h2>Junatiedot:</h2>
             <ul>
-                <li>Junanumero: <strong></strong></li>
+                <li>Junanumero: <strong>{selectedTrain[0].trainNumber}</strong></li>
             </ul>
         </div>
     )
