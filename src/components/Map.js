@@ -137,12 +137,10 @@ const Map = ({ center, zoom }) => {
     const triggerShowTrainInfoBox = () => {
         setShowTrainInfoBox(true);
     };
-    //console.log(showTrainInfoBox);
 
     const handleSelectedTrain = (train) => {
         setTrainInfo(train);
     };
-    //console.log(trainInfo);
 
     return (
         <div className="map">
