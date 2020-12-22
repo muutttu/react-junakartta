@@ -5,7 +5,7 @@ const Loader = () => {
         <LoadingOverlay
             active
             spinner
-            text='Ladataan asematietoja...'
+            text='Ladataan tietoja...'
         >
         </LoadingOverlay>
     )
