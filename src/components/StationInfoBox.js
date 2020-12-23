@@ -1,13 +1,13 @@
-const StationInfoBox = ({ show, info }) => {
+const StationInfoBox = ({ closeInfoBoxTrigger, station }) => {
 
     return (
         <div className="station-info">
-            <button onClick={show}><i class="las la-times"></i></button>
+            <button onClick={closeInfoBoxTrigger}><i class="las la-times"></i></button>
             <h2>Asematiedot:</h2>
             <ul>
-                <li>Asematunnus: <strong>{info.id}</strong></li>
-                <li>Paikkakunta: <strong>{info.name}</strong></li>
-                <li>Matkustaja-asema: <strong>{info.ispassenger}</strong></li>
+                <li>Asematunnus: <strong>{station.id}</strong></li>
+                <li>Paikkakunta: <strong>{station.name}</strong></li>
+                <li>Matkustaja-asema: <strong>{station.ispassenger}</strong></li>
             </ul>
         </div>
     )

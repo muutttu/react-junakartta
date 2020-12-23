@@ -1,32 +1,28 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import StationLayer from './StationLayer';
+import TrainLayer from './TrainLayer';
 import Loader from './Loader';
 import Updater from './Updater';
 import StationInfoBox from './StationInfoBox';
 import TrainInfoBox from './TrainInfoBox';
-import TrainLayer from './TrainLayer';
-import { MapContainer, LayersControl, TileLayer, FeatureGroup, GeoJSON } from 'react-leaflet';
-import L from 'leaflet';
+import { MapContainer, LayersControl, TileLayer, FeatureGroup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-//import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-import passengerstation from '../images/passenger-railway-station.png'
-import otherstation from '../images/other-railway-station.png';
-
 
 const Map = ({ center, zoom }) => {
     const [stations, setStations] = useState([]);
+    const [stationInfo, setStationInfo] = useState(null);
+    const [showStationInfoBox, setShowStationInfoBox] = useState(false);
+    const [trains, setTrains] = useState([]);
+    const [trainInfo, setTrainInfo] = useState(null);
+    const [showTrainInfoBox, setShowTrainInfoBox] = useState(false);
     const [stationsLoaded, setStationsLoaded] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isError, setIsError] = useState(false);
-    const [stationInfo, setStationInfo] = useState(null);
-    const [showInfoBox, setShowInfoBox] = useState(false);
-    const [trains, setTrains] = useState([]);
     const [refreshTrigger, setRefreshTrigger] = useState(false);
-    const [trainInfo, setTrainInfo] = useState(null);
-    const [showTrainInfoBox, setShowTrainInfoBox] = useState(false);
 
+    // Asemien tilan asettaminen sivun lataamisen yhteydessä:
     useEffect(() => {
         const fetchData = async () => {
             //console.log("This will be logged on component mount");
@@ -35,7 +31,7 @@ const Map = ({ center, zoom }) => {
             setIsError(false);
 
             try {
-                const stationdata = await axios('https://rata.digitraffic.fi/api/v1/metadata/stations.geojson');
+                const stationdata = await axios("https://rata.digitraffic.fi/api/v1/metadata/stations.geojson");
                 setStations(stationdata.data);
                 setIsLoading(false);
             } catch (error) {
@@ -56,12 +52,13 @@ const Map = ({ center, zoom }) => {
         }
     }, []);
 
+    // Junien tilan asettaminen intervallilla:
     useEffect(() => {
         const updateTrainData = async () => {
             setIsUpdating(true);
 
             try {
-                const traindata = await axios('https://rata.digitraffic.fi/api/v1/train-locations.geojson/latest');
+                const traindata = await axios("https://rata.digitraffic.fi/api/v1/train-locations.geojson/latest");
                 setTrains(traindata.data);
                 setIsUpdating(false);
             } catch (error) {
@@ -86,58 +83,34 @@ const Map = ({ center, zoom }) => {
         }
     }, [refreshTrigger]);
 
-    let StationIcon = L.Icon.extend({
-        options: {
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            shadowUrl: iconShadow,
-            shadowSize: [40, 40],
-            shadowAnchor: [10, 40]
-        }
-    });
-
-    let PassengerStationIcon = new StationIcon({
-        iconUrl: passengerstation
-    });
-
-    let OtherStationIcon = new StationIcon({
-        iconUrl: otherstation
-    });
-
-
-
-    const handleStationLayer = (feature, latlng) => {
-        if (feature.properties.passengerTraffic) {
-            return L.marker(latlng, { icon: PassengerStationIcon, });
-        }
-        return L.marker(latlng, { icon: OtherStationIcon, });
+    // Asemakerroksen funktiot:
+    // Avataan aseman infolaatikko, asetetaan StationInfoBox-komponentissa
+    const triggerOpenStationInfoBox = () => {
+        setShowStationInfoBox(true);
     };
 
-    const handleStationFeatures = (feature, layer) => {
-        layer.on({
-            'click': function (e) {
-                setStationInfo({
-                    id: e.target.feature.properties.stationUICCode,
-                    name: e.target.feature.properties.stationName,
-                    ispassenger: e.target.feature.properties.passengerTraffic ? "Kyllä" : "Ei"
-                });
-                setShowInfoBox(true);
-            }
-        });
+    // Suljetaan aseman infolaatikko, asetetaan StationInfoBox-komponentissa
+    const triggerCloseStationInfoBox = () => {
+        setShowStationInfoBox(false);
     };
 
-    const handleInfoBoxShow = () => {
-        setShowInfoBox(false);
+    // StationInfoBox-komponentin asemadata
+    const handleSelectedStation = (station) => {
+        setStationInfo(station);
     };
 
-    const handleTrainInfoBoxShow = () => {
+    // Junakerroksen funktiot:
+    // Avataan junan infolaatikko, asetetaan TrainInfoBox-komponentissa
+    const triggerCloseTrainInfoBox = () => {
         setShowTrainInfoBox(false);
     };
 
-    const triggerShowTrainInfoBox = () => {
+    // Suljetaan juna infolaatikko, asetetaan TrainInfoBox-komponentissa
+    const triggerOpenTrainInfoBox = () => {
         setShowTrainInfoBox(true);
     };
 
+    // TrainInfoBox-komponentin junadata
     const handleSelectedTrain = (train) => {
         setTrainInfo(train);
     };
@@ -164,20 +137,20 @@ const Map = ({ center, zoom }) => {
                         <FeatureGroup>
                             {isLoading
                                 ? <Loader />
-                                : <GeoJSON data={stations} pointToLayer={handleStationLayer} onEachFeature={handleStationFeatures} />}
+                                : <StationLayer layerData={stations} selectedObject={handleSelectedStation} openInfoBoxTrigger={triggerOpenStationInfoBox} />}
                         </FeatureGroup>
                     </LayersControl.Overlay>
                     <LayersControl.Overlay checked name="Junat">
                         <FeatureGroup>
                             {stationsLoaded && isUpdating
                                 ? <Updater />
-                                : <TrainLayer layerdata={trains} selectedtrain={handleSelectedTrain} infoboxtrigger={triggerShowTrainInfoBox} />}
+                                : <TrainLayer layerdata={trains} selectedObject={handleSelectedTrain} openInfoBoxTrigger={triggerOpenTrainInfoBox} />}
                         </FeatureGroup>
                     </LayersControl.Overlay>
                 </LayersControl>
             </MapContainer>
-            {showInfoBox && stationInfo && <StationInfoBox show={handleInfoBoxShow} info={stationInfo} />}
-            {showTrainInfoBox && trainInfo && <TrainInfoBox show={handleTrainInfoBoxShow} train={trainInfo} />}
+            {showStationInfoBox && stationInfo && <StationInfoBox closeInfoBoxTrigger={triggerCloseStationInfoBox} station={stationInfo} />}
+            {showTrainInfoBox && trainInfo && <TrainInfoBox closeInfoBoxTrigger={triggerCloseTrainInfoBox} train={trainInfo} />}
         </div>
     )
 }

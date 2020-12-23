@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Loader from './Loader';
 
-const TrainInfoBox = ({ show, train }) => {
+const TrainInfoBox = ({ closeInfoBoxTrigger, train }) => {
 
     const [selectedTrain, setSelectedTrain] = useState([{
         trainNumber: train
@@ -32,10 +32,8 @@ const TrainInfoBox = ({ show, train }) => {
         }
     }, [train]);
 
-    console.log(selectedTrain);
-
     const element = <div className="train-info">
-        <button onClick={show}><i class="las la-times"></i></button>
+        <button onClick={closeInfoBoxTrigger}><i class="las la-times"></i></button>
         <h2>Junatiedot:</h2>
         <ul>
             <li>Junanumero: <strong>{selectedTrain[0].trainNumber}</strong></li>
