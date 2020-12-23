@@ -1,6 +1,8 @@
 # React-junaseurantasovellus
 
-Web-sovellus, joka näyttää reaaliaikaisesti Suomen junien paikka- ja kulkutietoja sekä asemat. Data noudetaan Traffic Management Finland:n REST rajapinta-API:sta (https://www.digitraffic.fi/rautatieliikenne/). 
+Web-sovellus, joka näyttää reaaliaikaisesti Suomen junien paikka- ja kulkutietoja sekä asemat. Data noudetaan Traffic Management Finland:n REST rajapinta-API:sta (https://www.digitraffic.fi/rautatieliikenne/).
+
+
 
 ## Komponenttikirjastot
 ### React-leaflet
