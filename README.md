@@ -2,7 +2,7 @@
 
 Web-sovellus, joka näyttää reaaliaikaisesti Suomen junien paikka- ja kulkutietoja sekä asemat. Data noudetaan Traffic Management Finland:n REST rajapinta-API:sta (https://www.digitraffic.fi/rautatieliikenne/).
 
-
+https://github.com/muutttu/react-junakartta/blob/master/sovellusesimerkki.png
 
 ## Komponenttikirjastot
 ### React-leaflet
